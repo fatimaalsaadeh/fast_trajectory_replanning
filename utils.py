@@ -1,6 +1,7 @@
 import math
 from algorithms import *
 
+
 class Node:
     # 0 = blocked, 1 = regular unblocked, 2 = hard to traverse
     # a = regular unblocked cell with highway
@@ -26,13 +27,12 @@ class Heap:
     def __init__(self):
         self
 
+
 # |x1 - x2| + |y1 - y2|
 def manhattan_distance(parent, current):
     (x1, y1) = parent
     (x2, y2) = current
-    return (abs(x1-x2) + abs(y1-y2))
-
-
+    return (abs(x1 - x2) + abs(y1 - y2))
 
 
 def heuristic(self, goal, current, hType):
@@ -42,7 +42,7 @@ def heuristic(self, goal, current, hType):
     dx = abs(x1 - x2)
     dy = abs(y1 - y2)
 
-    # diagnol distance, assuming highways
+    # diagonal distance, assuming highways
     if hType == 0:
         return .25 * (dx + dy) + (math.sqrt(2) - 2 * .25) * min(dx, dy)
 
@@ -62,7 +62,6 @@ def heuristic(self, goal, current, hType):
     if hType == 4:
         return (dx + dy)
 
-    # diagnol, assuming regular
+    # diagonal, assuming regular
     if hType == 5:
         return (dx + dy) + (math.sqrt(2) - 2) * min(dx, dy)
-

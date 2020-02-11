@@ -4,13 +4,13 @@ import sys
 from utils import *
 
 global adapt_counter
-global ggoal
+global goal
 global reached
+
 
 def neighbors(grid, gridInfo, start):
     (x, y) = (start.x, start.y)
-    points = [(x - 1, y - 1), (x, y - 1), (x + 1, y - 1), (x - 1, y), (x + 1, y), (x - 1, y + 1), (x, y + 1),
-              (x + 1, y + 1)]
+    points = [(x, y - 1), (x - 1, y), (x + 1, y), (x, y + 1)]
 
     i = 0
     k = 8
@@ -30,12 +30,9 @@ def neighbors(grid, gridInfo, start):
     return points
 
 
-
-
-
 def adaptastar(grid, gridInfo, start_x, start_y, goal_x, goal_y):
     start = gridInfo[start_x][start_y]
-    goal =  gridInfo[goal_x][goal_y]
+    goal = gridInfo[goal_x][goal_y]
     neighbors(start, grid, gridInfo)
 
     path = {}
