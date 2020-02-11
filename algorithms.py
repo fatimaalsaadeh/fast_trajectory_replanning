@@ -31,25 +31,6 @@ def neighbors(grid, gridInfo, start):
 
 
 
-def compute_path(goal, openSet, visited, grid, gridInfo, cost,path):
-    while openSet:
-        current = heapq.heappop(openSet)
-        if current.x == goal.x and current.y == goal.y:
-            reached = True
-            break
-        for next in neighbors(current):
-            costCur = cost[current[1]] + manhattan_distance(grid, gridInfo, current[1], next)
-            node = gridInfo[next[1]][next[0]]
-            if next not in cost or costCur < cost[next]:
-                cost[next] = costCur
-                node.h = heuristic(goal, next, 4)
-                node.g = costCur
-                node.f = node.g + node.h
-                heapq.heappush(openSet, (node.f, next))
-                path[next] = current[1]
-                visited.append(next)
-
-
 
 
 def adaptastar(grid, gridInfo, start_x, start_y, goal_x, goal_y):
@@ -73,8 +54,22 @@ def adaptastar(grid, gridInfo, start_x, start_y, goal_x, goal_y):
         start.h = cost[start]
         heapq.heappush(openSet, (0, start))
         visited.append(start)
-        compute_path(goal, openSet, visited, grid, gridInfo,cost)
-        current = heapq.heappop(openSet)
+        while openSet:
+            current = heapq.heappop(openSet)
+            if current.x == goal.x and current.y == goal.y:
+                reached = True
+                break
+            for next in neighbors(current):
+                costCur = cost[current[1]] + manhattan_distance(grid, gridInfo, current[1], next)
+                node = gridInfo[next[1]][next[0]]
+                if next not in cost or costCur < cost[next]:
+                    cost[next] = costCur
+                    node.h = heuristic(goal, next, 4)
+                    node.g = costCur
+                    node.f = node.g + node.h
+                    heapq.heappush(openSet, (node.f, next))
+                    path[next] = current[1]
+                    visited.append(next)
     curP = goal
     pathOrder = []
     while curP is not None and reached:
