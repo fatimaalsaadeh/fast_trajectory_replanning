@@ -1,7 +1,7 @@
 import numpy as np
 import random
 import tkinter as tk
-
+import sys
 from utils import *
 
 BLACK = '#000000'
@@ -9,15 +9,14 @@ DARK_GRAY = '#494949'
 LIGHT_GRAY = '#979899'
 WHITE = '#fff'
 
-import sys
 sys.setrecursionlimit(10**6)
 
 
 class Grid:
     # Metadata
     gridArr = [[]]  # numpy array
-    start = []
-    goal = []
+    start = None
+    goal = None
 
     # GUI variables
     numRows = 0
@@ -37,7 +36,7 @@ class Grid:
         self.gridArr = [[[] for i in range(self.numCols)] for j in range(self.numRows)]
         for x in range(self.numRows):
             for y in range(self.numCols):
-                self.gridArr[y][x] = Node()
+                self.gridArr[y][x] = Node(x=x, y=y)
 
         self._generate_maze()
 
@@ -64,7 +63,7 @@ class Grid:
 
             if chance < .3:
                 unvisited.remove((i, j))
-                self.gridArr[i][j].blocked = True
+                self.gridArr[i][j].is_blocked = True
 
             else:
                 self._dfs(i, j, unvisited)
@@ -88,15 +87,13 @@ class Grid:
 
     # pick valid start/goal points
     def _pick_start_goal(self):
-        start = self._gen_start_goal()
 
-        print(start)
-        while self.gridArr[start[1]][start[0]].blocked:
+        start = self._gen_start_goal()
+        while self.gridArr[start[1]][start[0]].is_blocked:
             start = self._gen_start_goal()
 
         goal = self._gen_start_goal()
-        print(goal)
-        while self.gridArr[goal[1]][goal[0]].blocked:
+        while self.gridArr[goal[1]][goal[0]].is_blocked:
             goal = self._gen_start_goal()
 
         a = start[0] - goal[0]
@@ -105,14 +102,14 @@ class Grid:
 
         while csq < 10000:
             goal = self._gen_start_goal()
-            while self.gridArr[goal[1]][goal[0]].blocked:
+            while self.gridArr[goal[1]][goal[0]].is_blocked:
                 goal = self._gen_start_goal()
             a = start[0] - goal[0]
             b = start[1] - goal[1]
             csq = a ** 2 + b ** 2
 
-        self.start = start
-        self.goal = goal
+        self.start = self.gridArr[start[1]][start[0]]
+        self.goal = self.gridArr[goal[1]][goal[0]]
 
     # create the overall maze
     def _generate_maze(self):
@@ -131,7 +128,7 @@ class Grid:
         self._pick_start_goal()
 
     def _draw_cell(self, node, tag, r, c, border):
-        if node.blocked:
+        if node.is_blocked:
             color = DARK_GRAY
         else:
             color = WHITE
@@ -145,12 +142,12 @@ class Grid:
         cpt_y = (c * self.sideLength + (c + 1) * self.sideLength) / 2
 
         # Mark Start and Goal Nodes
-        if r == self.goal[0] and c == self.goal[1]:
+        if r == self.goal.x and c == self.goal.y:
             self.canvas.create_oval(
                 r * self.sideLength + 2, c * self.sideLength + 2,
                 (r + 1) * self.sideLength - 2, (c + 1) * self.sideLength - 2,
                 fill='red')
-        if r == self.start[0] and c == self.start[1]:
+        if r == self.start.x and c == self.start.y:
             self.canvas.create_oval(
                 r * self.sideLength + 2, c * self.sideLength + 2,
                 (r + 1) * self.sideLength - 2, (c + 1) * self.sideLength - 2,
@@ -174,12 +171,40 @@ class Grid:
     def _draw_path(self, root, point):
         x = point[0]
         y = point[1]
+
+        color = "blue"
+
+        if x == self.start.x and y == self.start.y:
+            color = "green"
+        if x == self.goal.x and y == self.goal.y:
+            color = "red"
         f = tk.Frame(root, height=self.sideLength + 1, width=self.sideLength + 1)
         f.pack_propagate(0)
-        b = tk.Button(f, bg="red", bd=1, command=lambda: self._print(point))
+        b = tk.Button(f, bg=color, bd=1, command=lambda: self._print(point))
         f.pack()
         b.pack()
         f.place(x=x * self.sideLength, y=y * self.sideLength)
+
+    # prints information about cell on path
+    def _print(self, info):
+        x, y = info[0], info[1]
+        node = self.gridArr[y][x]
+        temp = ""
+        if x == self.start.x and y == self.start.y:
+            temp = temp + "Start:	"
+        if x == self.goal.x and y == self.goal.y:
+            temp = temp + "Goal:	"
+        temp = temp + "x=" + str(x) + " y=" + str(y)
+        print(temp)
+        '''
+        if node.is_blocked:
+            temp = "Space Type: Blocked"
+        else:
+            temp = "Space Type: Unblocked"
+        print(temp)
+        '''
+        print("h=%f\tg=%f\tf=%f" % (info[2], info[3], info[4]))
+        print
 
     # create GUI of maze with a path displayed on it
     def display_path(self, root, pathInfo):
@@ -196,11 +221,13 @@ class Grid:
             f.write('\n')
 
 
-g = Grid()
-print("here")
-root = tk.Tk()
-print("here2")
-g.create_maze(root)
-print("here3")
+def main():
+    g = Grid()
+    root = tk.Tk()
+    g.create_maze(root)
 
-root.mainloop()
+    root.mainloop()
+
+
+if __name__ == "__main__":
+    main()
