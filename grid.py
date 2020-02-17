@@ -4,10 +4,15 @@ import tkinter as tk
 
 from utils import *
 
+BLACK = '#000000'
+DARK_GRAY = '#494949'
+LIGHT_GRAY = '#979899'
+WHITE = '#fff'
+
 
 class Grid:
     # Metadata
-    gridArr = []  # numpy array
+    gridArr = [[]]  # numpy array
     start = []
     goal = []
 
@@ -21,9 +26,12 @@ class Grid:
 
     def __init__(self):
 
-        self.numCols = 101
-        self.numRows = 101
-        self.gridArr = np.array((self.numCols, self.numRows))
+        # self.numCols = 101
+        # self.numRows = 101
+        self.numCols = 40
+        self.numRows = 40
+        # self.gridArr = np.array((self.numCols, self.numRows))
+        self.gridArr = [[[] for i in range(self.numCols)] for j in range(self.numRows)]
         for x in range(self.numRows):
             for y in range(self.numCols):
                 self.gridArr[y][x] = Node()
@@ -31,25 +39,32 @@ class Grid:
         self._generate_maze()
 
     # dfs to pick blocked/unblocked cells
-    def _dfs(self, x, y, visited):
+    def _dfs(self, x, y, unvisited):
+
+        if len(unvisited) == 0:
+            return
+
+        unvisited.remove((x, y))
 
         points = [(x, y - 1), (x - 1, y), (x + 1, y), (x, y + 1)]
 
         random.shuffle(points)
 
         for i, j in points:
-            if i < 0 or i > self.numRows or j < 0 or j > self.h or visited[i][j]:
+            if i < 0 or i >= self.numRows or j < 0 or j >= self.numCols:
                 continue
+
+            if (i, j) not in unvisited:
+                continue
+
             chance = random.random()
 
             if chance < .3:
-                visited[i][j] = True
-                self.gridArr[i].blocked = True
+                unvisited.remove((i, j))
+                self.gridArr[i][j].blocked = True
 
             else:
-                self._dfs(i, j, visited)
-
-        visited[x][y] = True
+                self._dfs(i, j, unvisited)
 
     # generate points near perimeter for the start or goal
     def _gen_start_goal(self):
@@ -71,13 +86,16 @@ class Grid:
     # pick valid start/goal points
     def _pick_start_goal(self):
         start = self._gen_start_goal()
+
+        print(start)
         while self.gridArr[start[1]][start[0]].blocked:
             start = self._gen_start_goal()
 
         goal = self._gen_start_goal()
+        print(goal)
         while self.gridArr[goal[1]][goal[0]].blocked:
             goal = self._gen_start_goal()
-
+        '''
         a = start[0] - goal[0]
         b = start[1] - goal[1]
         csq = a ** 2 + b ** 2
@@ -89,22 +107,23 @@ class Grid:
             a = start[0] - goal[0]
             b = start[1] - goal[1]
             csq = a ** 2 + b ** 2
-
+        '''
         self.start = start
         self.goal = goal
 
     # create the overall maze
     def _generate_maze(self):
-        visited = [[False for j in range(self.numRows)] for i in range(self.h)]
+        unvisited = []
 
-        while not np.all(visited):
-            x = random.randrange(0, 102)
-            y = random.randrange(0, 102)
+        for a in range(self.numRows):
+            for b in range(self.numCols):
+                unvisited.append((a, b))
 
-            if visited[x][y]:
-                continue
+        while len(unvisited) is not 0:
+            random.shuffle(unvisited)
+            x, y = unvisited[0]
 
-            self._dfs(x, y, visited)
+            self._dfs(x, y, unvisited)
 
         self._pick_start_goal()
 
@@ -144,7 +163,7 @@ class Grid:
         root.wm_title("Maze\n")
         for c in range(self.numRows):
             for r in range(self.numCols):
-                node = self.gridInfo[c][r]
+                node = self.gridArr[c][r]
                 tag = str(r) + " " + str(c)
                 self._draw_cell(node, tag, r, c, BLACK)
         self.canvas.pack()
@@ -174,3 +193,11 @@ class Grid:
             f.write('\n')
 
 
+g = Grid()
+print("here")
+root = tk.Tk()
+print("here2")
+g.create_maze(root)
+print("here3")
+
+root.mainloop()
