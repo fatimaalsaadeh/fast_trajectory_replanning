@@ -8,12 +8,13 @@ class Node:
     # b = hard to traverse with highway
     # default settings
     def __init__(self, is_blocked=False):
-        # 0 = blocked, 1 = regular unblocked
-        blockType = "0"
+        self.blocked = False
+        '''
         self.top = False
         self.bottom = False
         self.left = False
         self.right = False
+        '''
         self.parent = None
         self.child = None
         self.x = 0

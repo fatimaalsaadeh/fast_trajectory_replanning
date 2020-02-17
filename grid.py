@@ -1,0 +1,176 @@
+import numpy as np
+import random
+import tkinter as tk
+
+from utils import *
+
+
+class Grid:
+    # Metadata
+    gridArr = []  # numpy array
+    start = []
+    goal = []
+
+    # GUI variables
+    numRows = 0
+    numCols = 0
+    sideLength = 15
+    canvas = 0
+    width = 0
+    height = 0
+
+    def __init__(self):
+
+        self.numCols = 101
+        self.numRows = 101
+        self.gridArr = np.array((self.numCols, self.numRows))
+        for x in range(self.numRows):
+            for y in range(self.numCols):
+                self.gridArr[y][x] = Node()
+
+        self._generate_maze()
+
+    # dfs to pick blocked/unblocked cells
+    def _dfs(self, x, y, visited):
+
+        points = [(x, y - 1), (x - 1, y), (x + 1, y), (x, y + 1)]
+
+        random.shuffle(points)
+
+        for i, j in points:
+            if i < 0 or i > self.numRows or j < 0 or j > self.h or visited[i][j]:
+                continue
+            chance = random.random()
+
+            if chance < .3:
+                visited[i][j] = True
+                self.gridArr[i].blocked = True
+
+            else:
+                self._dfs(i, j, visited)
+
+        visited[x][y] = True
+
+    # generate points near perimeter for the start or goal
+    def _gen_start_goal(self):
+        # start point
+        x = random.randint(0, 39)
+        y = random.randint(0, 39)
+
+        # make sure the start point is near the perimeter
+        if x >= 20:
+            x -= 20
+            x += self.numCols - 20
+
+        if y >= 20:
+            y -= 20
+            y += self.numRows - 20
+
+        return (x, y)
+
+    # pick valid start/goal points
+    def _pick_start_goal(self):
+        start = self._gen_start_goal()
+        while self.gridArr[start[1]][start[0]].blocked:
+            start = self._gen_start_goal()
+
+        goal = self._gen_start_goal()
+        while self.gridArr[goal[1]][goal[0]].blocked:
+            goal = self._gen_start_goal()
+
+        a = start[0] - goal[0]
+        b = start[1] - goal[1]
+        csq = a ** 2 + b ** 2
+
+        while csq < 10000:
+            goal = self._gen_start_goal()
+            while self.gridArr[goal[1]][goal[0]].blocked:
+                goal = self._gen_start_goal()
+            a = start[0] - goal[0]
+            b = start[1] - goal[1]
+            csq = a ** 2 + b ** 2
+
+        self.start = start
+        self.goal = goal
+
+    # create the overall maze
+    def _generate_maze(self):
+        visited = [[False for j in range(self.numRows)] for i in range(self.h)]
+
+        while not np.all(visited):
+            x = random.randrange(0, 102)
+            y = random.randrange(0, 102)
+
+            if visited[x][y]:
+                continue
+
+            self._dfs(x, y, visited)
+
+        self._pick_start_goal()
+
+    def _draw_cell(self, node, tag, r, c, border):
+        if node.blocked:
+            color = DARK_GRAY
+        else:
+            color = WHITE
+
+        self.canvas.create_rectangle(
+            r * self.sideLength, c * self.sideLength,
+            (r + 1) * self.sideLength, (c + 1) * self.sideLength,
+            outline=border, fill=color, tag=tag)
+
+        cpt_x = (r * self.sideLength + (r + 1) * self.sideLength) / 2
+        cpt_y = (c * self.sideLength + (c + 1) * self.sideLength) / 2
+
+        # Mark Start and Goal Nodes
+        if r == self.goal[0] and c == self.goal[1]:
+            self.canvas.create_oval(
+                r * self.sideLength + 2, c * self.sideLength + 2,
+                (r + 1) * self.sideLength - 2, (c + 1) * self.sideLength - 2,
+                fill='red')
+        if r == self.start[0] and c == self.start[1]:
+            self.canvas.create_oval(
+                r * self.sideLength + 2, c * self.sideLength + 2,
+                (r + 1) * self.sideLength - 2, (c + 1) * self.sideLength - 2,
+                fill='green')
+
+    # create GUI of maze on its own
+    def create_maze(self, root):
+        if self.numCols > 50 or self.numRows > 50:
+            self.sideLength = 7
+        self.width = self.numCols * self.sideLength
+        self.height = self.numRows * self.sideLength
+        self.canvas = tk.Canvas(root, width=self.width, height=self.height)
+        root.wm_title("Maze\n")
+        for c in range(self.numRows):
+            for r in range(self.numCols):
+                node = self.gridInfo[c][r]
+                tag = str(r) + " " + str(c)
+                self._draw_cell(node, tag, r, c, BLACK)
+        self.canvas.pack()
+
+    def _draw_path(self, root, point):
+        x = point[0]
+        y = point[1]
+        f = tk.Frame(root, height=self.sideLength + 1, width=self.sideLength + 1)
+        f.pack_propagate(0)
+        b = tk.Button(f, bg="red", bd=1, command=lambda: self._print(point))
+        f.pack()
+        b.pack()
+        f.place(x=x * self.sideLength, y=y * self.sideLength)
+
+    # create GUI of maze with a path displayed on it
+    def display_path(self, root, pathInfo):
+        self.create_maze(root)
+        for i in range(len(pathInfo)):
+            self._draw_path(root, pathInfo[i])
+        self.canvas.pack()
+
+    # print the grid; probably not useful
+    def print_grid(self, f):
+        for y in range(self.h):
+            for x in range(self.w):
+                f.write(self.gridArr[y][x] + ' ')
+            f.write('\n')
+
+
