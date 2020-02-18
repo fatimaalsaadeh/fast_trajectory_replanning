@@ -28,10 +28,10 @@ class Grid:
 
     def __init__(self):
 
-        self.numCols = 101
-        self.numRows = 101
-        # self.numCols = 40
-        # self.numRows = 40
+        # self.numCols = 101
+        # self.numRows = 101
+        self.numCols = 40
+        self.numRows = 40
         # self.gridArr = np.array((self.numCols, self.numRows))
         self.gridArr = [[[] for i in range(self.numCols)] for j in range(self.numRows)]
         for x in range(self.numRows):
@@ -100,6 +100,7 @@ class Grid:
         b = start[1] - goal[1]
         csq = a ** 2 + b ** 2
 
+        '''
         while csq < 10000:
             goal = self._gen_start_goal()
             while self.gridArr[goal[1]][goal[0]].is_blocked:
@@ -107,6 +108,7 @@ class Grid:
             a = start[0] - goal[0]
             b = start[1] - goal[1]
             csq = a ** 2 + b ** 2
+        '''
 
         self.start = self.gridArr[start[1]][start[0]]
         self.goal = self.gridArr[goal[1]][goal[0]]

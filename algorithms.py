@@ -150,6 +150,9 @@ class Algorithm:
         path[start] = None
         cost[start] = 0
         reached = False
+
+        final_path = {}
+
         if (is_forward):
             self.grid_info[start[1]][start[0]].g = 0
             self.grid_info[start[1]][start[0]].h = manhattan_distance(self.grid_info[start[1]][start[0]],
@@ -159,10 +162,11 @@ class Algorithm:
             current = heapq.heappop(open_set)[1]
             self.neighbors(current, True)
             while current != goal:
+                path = {}
                 counter += 1
                 self.grid_info[current[1]][current[0]].search = counter
                 self.grid_info[current[1]][current[0]].g = 0
-                self.grid_info[current[1]][current[0]].h = manhattan_distance(self.grid_info[start[1]][start[0]],
+                self.grid_info[current[1]][current[0]].h = manhattan_distance(self.grid_info[current[1]][current[0]],
                                                                               self.grid_info[goal[1]][goal[0]])
                 self.grid_info[current[1]][current[0]].f = self.grid_info[current[1]][current[0]].h + \
                                                            self.grid_info[current[1]][current[0]].g
@@ -199,26 +203,28 @@ class Algorithm:
 
                 cur_p = goal
                 pathOrder = []
+                print("here")
+                path = {**path, **final_path}
 
                 while cur_p is not None and reached:
                     x, y = cur_p
                     pathOrder.insert(0, self.grid_info[y][x])
                     cur_p = path[cur_p]
 
+
                 # move
-                # we know the first move is safe
-                pathOrder.pop()
                 located = pathOrder.pop()
-                next_move = pathOrder.pop()
-                while pathOrder is not None:
+                invalid = False
+                while len(pathOrder) > 0:
                     n = self.neighbors((located.x, located.y), True)
-                    potential_next = self.grid_info[next_move.y][next_move.x]
+                    potential_next = pathOrder.pop()
                     if potential_next.is_seen:
                         break
                         # print intermediate grid for presentation
                     else:
+                        final_path[potential_next] = located
                         located = potential_next
-                        next_move = pathOrder.pop()
+
                 current = (located.x, located.y)
 
                 print(current)
@@ -227,6 +233,8 @@ class Algorithm:
                     reached = True
                 else:
                     reached = False
+
+                print("cur: ", current, "goal: ", goal, "reached: ", reached)
 
             if reached:
                 return reached, pathOrder[::-1], self.grid_info[goal[1]][goal[0]].g, len(cost)
