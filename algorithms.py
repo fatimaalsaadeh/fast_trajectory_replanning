@@ -18,7 +18,7 @@ class Algorithm:
         self.start = grid.start
         self.reached = None
 
-    def neighbors(self, start):
+    def neighbors(self, start, seen=False):
         neighborslist = []
         (x, y) = start
         points = [(x, y - 1), (x - 1, y), (x + 1, y), (x, y + 1)]
@@ -30,10 +30,10 @@ class Algorithm:
                 i -= 1
                 k -= 1
             else:
-                if (not isinstance(self.grid_info[points[i][1]][points[i][0]], Node)):
-                    self.grid_info[points[i][1]][points[i][0]] = Node()
-                neighborslist.append(self.grid_info[points[i][1]][points[i][0]])
-
+                position = self.grid_info[points[i][1]][points[i][0]]
+                neighborslist.append(position)
+                if(seen and position.is_blocked):
+                    position.is_seen = True
             i += 1
         return points
 
@@ -131,7 +131,7 @@ class Algorithm:
         if reached:
             return reached, pathOrder[::-1], cost[goal], len(cost)
         return reached, pathOrder[::-1], sys.maxsize, len(cost)
-'''
+
     def repeated_astar(self, is_forward, is_backward, tie_break):
         start = (self.start.x, self.start.y)
         goal = (self.goal.x, self.goal.y)
@@ -151,6 +151,7 @@ class Algorithm:
             self.grid_info[start[1]][start[0]].h = manhattan_distance(self.grid_info[start[1]][start[0]], self.grid_info[goal[1]][goal[0]])
             self.grid_info[start[1]][start[0]].f = self.grid_info[start[1]][start[0]].g + self.grid_info[start[1]][start[0]].h
             current = heapq.heappop(open_set)[1]
+            self.neighbors(current, True)
             while current != goal:
                 counter+=1
                 self.grid_info[current[1]][current[0]].search = counter
@@ -162,13 +163,16 @@ class Algorithm:
                 open_set = []
                 closed_set = []
                 heapq.heappush(open_set, (self.grid_info[current[1]][current[0]].f, current))
-                while self.grid_info[goal[1]][goal[0]].g > self.grid_info[current[1]][current[0]].f:
+                while self.grid_info[goal[1]][goal[0]].g >open_set[0][0]:
                     current = heapq.heappop(open_set)[1]
                     closed_set.append(current)
                     for next in self.neighbors(current):
-                        costCur = cost[current] + (
-                            sys.maxsize if self.grid_info[next[1]][next[0]].is_blocked else 1)
                         node = self.grid_info[next[1]][next[0]]
+                        if(node.search < counter):
+                            node.g = sys.maxsize
+                            node.search = counter
+                        costCur = cost[current] + (
+                            sys.maxsize if self.grid_info[next[1]][next[0]].is_seen else 1)
                         if next not in cost or costCur < cost[next]:
                             cost[next] = costCur
                             if tie_break != 0:
@@ -215,7 +219,7 @@ class Algorithm:
                 current_node = cur
             if reached:
                 return current_node
-'''
+
 
 
 def main():
