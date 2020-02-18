@@ -4,10 +4,11 @@ class Node:
         self.is_blocked = is_blocked
         self.parent = None
         self.next = None
+        self.is_seen = False
         self.x = x
         self.y = y
         self.h = 0
-        self.g = 0
+        self.g = None
         self.f = 0
         self.search = 0
 

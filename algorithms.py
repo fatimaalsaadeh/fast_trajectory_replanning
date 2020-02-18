@@ -32,7 +32,7 @@ class Algorithm:
             else:
                 position = self.grid_info[points[i][1]][points[i][0]]
                 neighborslist.append(position)
-                if(seen and position.is_blocked):
+                if (seen and position.is_blocked):
                     position.is_seen = True
             i += 1
         return points
@@ -94,8 +94,10 @@ class Algorithm:
         reached = False
 
         self.grid_info[start[1]][start[0]].g = 0
-        self.grid_info[start[1]][start[0]].h = manhattan_distance(self.grid_info[start[1]][start[0]], self.grid_info[goal[1]][goal[0]])
-        self.grid_info[start[1]][start[0]].f = self.grid_info[start[1]][start[0]].g + self.grid_info[start[1]][start[0]].h
+        self.grid_info[start[1]][start[0]].h = manhattan_distance(self.grid_info[start[1]][start[0]],
+                                                                  self.grid_info[goal[1]][goal[0]])
+        self.grid_info[start[1]][start[0]].f = self.grid_info[start[1]][start[0]].g + self.grid_info[start[1]][
+            start[0]].h
 
         current = heapq.heappop(open_set)[1]
         while current != goal:
@@ -120,8 +122,10 @@ class Algorithm:
                 break
             else:
                 self.initialize_node(current, delta, counter)
-                if self.grid_info[current[1]][current[0]].g + self.grid_info[current[1]][current[0]].h < self.grid_info[prev[1]][prev[0]].g:
-                    self.grid_info[current[1]][current[0]].h = self.grid_info[goal[1]][goal[0]].g - self.grid_info[current[1]][current[0]].g
+                if self.grid_info[current[1]][current[0]].g + self.grid_info[current[1]][current[0]].h < \
+                        self.grid_info[prev[1]][prev[0]].g:
+                    self.grid_info[current[1]][current[0]].h = self.grid_info[goal[1]][goal[0]].g - \
+                                                               self.grid_info[current[1]][current[0]].g
         cur_p = goal
         pathOrder = []
         while cur_p is not None and reached:
@@ -148,53 +152,90 @@ class Algorithm:
         reached = False
         if (is_forward):
             self.grid_info[start[1]][start[0]].g = 0
-            self.grid_info[start[1]][start[0]].h = manhattan_distance(self.grid_info[start[1]][start[0]], self.grid_info[goal[1]][goal[0]])
-            self.grid_info[start[1]][start[0]].f = self.grid_info[start[1]][start[0]].g + self.grid_info[start[1]][start[0]].h
+            self.grid_info[start[1]][start[0]].h = manhattan_distance(self.grid_info[start[1]][start[0]],
+                                                                      self.grid_info[goal[1]][goal[0]])
+            self.grid_info[start[1]][start[0]].f = self.grid_info[start[1]][start[0]].g + self.grid_info[start[1]][
+                start[0]].h
             current = heapq.heappop(open_set)[1]
             self.neighbors(current, True)
             while current != goal:
-                counter+=1
+                counter += 1
                 self.grid_info[current[1]][current[0]].search = counter
                 self.grid_info[current[1]][current[0]].g = 0
-                self.grid_info[current[1]][current[0]].h = manhattan_distance(self.grid_info[start[1]][start[0]], self.grid_info[goal[1]][goal[0]])
-                self.grid_info[current[1]][current[0]].f = self.grid_info[current[1]][current[0]].h + self.grid_info[current[1]][current[0]].g
+                self.grid_info[current[1]][current[0]].h = manhattan_distance(self.grid_info[start[1]][start[0]],
+                                                                              self.grid_info[goal[1]][goal[0]])
+                self.grid_info[current[1]][current[0]].f = self.grid_info[current[1]][current[0]].h + \
+                                                           self.grid_info[current[1]][current[0]].g
                 self.grid_info[goal[1]][goal[0]].g = sys.maxsize
                 self.grid_info[goal[1]][goal[0]].search = counter
                 open_set = []
                 closed_set = []
                 heapq.heappush(open_set, (self.grid_info[current[1]][current[0]].f, current))
-                while self.grid_info[goal[1]][goal[0]].g >open_set[0][0]:
+                while open_set and self.grid_info[goal[1]][goal[0]].g > open_set[0][0]:
                     current = heapq.heappop(open_set)[1]
                     closed_set.append(current)
                     for next in self.neighbors(current):
                         node = self.grid_info[next[1]][next[0]]
-                        if(node.search < counter):
+                        if node.search < counter:
                             node.g = sys.maxsize
                             node.search = counter
-                        costCur = cost[current] + (
-                            sys.maxsize if self.grid_info[next[1]][next[0]].is_seen else 1)
-                        if next not in cost or costCur < cost[next]:
-                            cost[next] = costCur
+                        costCur = self.grid_info[current[1]][current[0]].g + (sys.maxsize if node.is_seen else 1)
+
+                        if node.g is None or costCur < node.g:
+                            # cost[next] = costCur
                             if tie_break != 0:
                                 node.h = manhattan_distance(self.grid_info[goal[1]][goal[0]],
-                                                                 self.grid_info[next[1]][next[0]])
+                                                            self.grid_info[next[1]][next[0]])
                             node.g = costCur
                             node.f = node.g + tie_break * node.h
                             heapq.heappush(open_set, (node.f, next))
-                            path[next] = current[1]
+                            path[next] = current
                 if not open_set:
                     print("blocked target")
                     reached = False
                     break
-            cur_p = goal
-            pathOrder = []
-            while cur_p is not None and reached:
-                x, y = cur_p
-                pathOrder.insert(0, (x, y, self.grid_info[y][x].h, self.grid_info[y][x].g, self.grid_info[y][x].f))
-                cur_p = path[cur_p]
+                elif goal in path:
+                    reached = True
+
+                cur_p = goal
+                pathOrder = []
+
+                while cur_p is not None and reached:
+                    x, y = cur_p
+                    pathOrder.insert(0, self.grid_info[y][x])
+                    cur_p = path[cur_p]
+
+                # move
+                # we know the first move is safe
+                pathOrder.pop()
+                located = pathOrder.pop()
+                next_move = pathOrder.pop()
+                while pathOrder is not None:
+                    n = self.neighbors((located.x, located.y), True)
+                    potential_next = self.grid_info[next_move.y][next_move.x]
+                    if potential_next.is_seen:
+                        break
+                        # print intermediate grid for presentation
+                    else:
+                        located = potential_next
+                        next_move = pathOrder.pop()
+                current = (located.x, located.y)
+
+                print(current)
+
+                if current == goal:
+                    reached = True
+                else:
+                    reached = False
+
             if reached:
-                return reached, pathOrder[::-1], cost[goal], len(cost)
+                return reached, pathOrder[::-1], self.grid_info[goal[1]][goal[0]].g, len(cost)
             return reached, pathOrder[::-1], sys.maxsize, len(cost)
+
+
+
+
+
         elif (is_backward):
             start_node.g = 0
             start_node.h = manhattan_distance(start_node, goal_node)
@@ -221,18 +262,19 @@ class Algorithm:
                 return current_node
 
 
-
 def main():
     grid_o = Grid()
     root = tk.Tk()
     alg = Algorithm(grid_o)
 
-    r, p, c, num_expanded = alg.adaptive_astar(1.25)
+    # r, p, c, num_expanded = alg.adaptive_astar(1.25)
+    r, p, c, num_expanded = alg.repeated_astar(True, False, 1.25)
     if r is not None:
         grid_o.display_path(root, p)
     else:
         grid_o.create_maze(root)
     root.mainloop()
+
 
 if __name__ == "__main__":
     main()

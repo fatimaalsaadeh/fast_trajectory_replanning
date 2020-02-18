@@ -169,8 +169,8 @@ class Grid:
         self.canvas.pack()
 
     def _draw_path(self, root, point):
-        x = point[0]
-        y = point[1]
+        x = point.x
+        y = point.y
 
         color = "blue"
 
@@ -187,7 +187,7 @@ class Grid:
 
     # prints information about cell on path
     def _print(self, info):
-        x, y = info[0], info[1]
+        x, y = info.x, info.y
         node = self.gridArr[y][x]
         temp = ""
         if x == self.start.x and y == self.start.y:
@@ -203,7 +203,7 @@ class Grid:
             temp = "Space Type: Unblocked"
         print(temp)
         '''
-        print("h=%f\tg=%f\tf=%f" % (info[2], info[3], info[4]))
+        print("h=%f\tg=%f\tf=%f" % (info.h, info.g, info.f))
         print
 
     # create GUI of maze with a path displayed on it
