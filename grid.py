@@ -28,10 +28,9 @@ class Grid:
 
     def __init__(self):
 
-        # self.numCols = 101
-        # self.numRows = 101
-        self.numCols = 40
-        self.numRows = 40
+        self.numCols = 101
+        self.numRows = 101
+
         # self.gridArr = np.array((self.numCols, self.numRows))
         self.gridArr = [[[] for i in range(self.numCols)] for j in range(self.numRows)]
         for x in range(self.numRows):
@@ -205,7 +204,7 @@ class Grid:
             temp = "Space Type: Unblocked"
         print(temp)
         '''
-        print("h=%f\tg=%f\tf=%f" % (info.h, info.g, info.f))
+        print("h=%f\tg=%f\tf=%f\tisb=%f" % (info.h, info.g, info.f, info.is_blocked))
         print
 
     # create GUI of maze with a path displayed on it

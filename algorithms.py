@@ -130,10 +130,10 @@ class Algorithm:
         pathOrder = []
         while cur_p is not None and reached:
             x, y = cur_p
-            pathOrder.insert(0, (x, y, self.grid_info[y][x].h, self.grid_info[y][x].g, self.grid_info[y][x].f))
+            pathOrder.insert(0, self.grid_info[y][x])
             cur_p = path[cur_p]
         if reached:
-            return reached, pathOrder[::-1], cost[goal], len(cost)
+            return reached, pathOrder[::-1], self.grid_info[goal[1]][goal[0]].g, len(cost)
         return reached, pathOrder[::-1], sys.maxsize, len(cost)
 
     def repeated_astar(self, is_forward, is_backward, tie_break):
@@ -150,49 +150,47 @@ class Algorithm:
         path[start] = None
         cost[start] = 0
         reached = False
-
+        prev = None
         final_path = {}
 
         if (is_forward):
-            self.grid_info[start[1]][start[0]].g = 0
-            self.grid_info[start[1]][start[0]].h = manhattan_distance(self.grid_info[start[1]][start[0]],
-                                                                      self.grid_info[goal[1]][goal[0]])
-            self.grid_info[start[1]][start[0]].f = self.grid_info[start[1]][start[0]].g + self.grid_info[start[1]][
-                start[0]].h
+            snode = self.grid_info[start[1]][start[0]]
+            gnode = self.grid_info[goal[1]][goal[0]]
+            snode.g = 0
+            snode.h = manhattan_distance(snode,gnode)
+            snode.f = snode.g + snode.h
             current = heapq.heappop(open_set)[1]
-            self.neighbors(current, True)
             while current != goal:
                 path = {}
                 counter += 1
-                self.grid_info[current[1]][current[0]].search = counter
-                self.grid_info[current[1]][current[0]].g = 0
-                self.grid_info[current[1]][current[0]].h = manhattan_distance(self.grid_info[current[1]][current[0]],
-                                                                              self.grid_info[goal[1]][goal[0]])
-                self.grid_info[current[1]][current[0]].f = self.grid_info[current[1]][current[0]].h + \
-                                                           self.grid_info[current[1]][current[0]].g
-                self.grid_info[goal[1]][goal[0]].g = sys.maxsize
-                self.grid_info[goal[1]][goal[0]].search = counter
+                cnode = self.grid_info[current[1]][current[0]]
+                cnode.search = counter
+                cnode.g = 0
+                cnode.h = manhattan_distance(cnode, gnode)
+                cnode.f = cnode.h + cnode.g
+
+                gnode.g = sys.maxsize
+                gnode.search = counter
                 open_set = []
                 closed_set = []
-                heapq.heappush(open_set, (self.grid_info[current[1]][current[0]].f, current))
-                while open_set and self.grid_info[goal[1]][goal[0]].g > open_set[0][0]:
+                heapq.heappush(open_set, (cnode.f, current))
+                while open_set and gnode.g > open_set[0][0]:
                     current = heapq.heappop(open_set)[1]
                     closed_set.append(current)
                     for next in self.neighbors(current):
-                        node = self.grid_info[next[1]][next[0]]
-                        if node.search < counter:
-                            node.g = sys.maxsize
-                            node.search = counter
-                        costCur = self.grid_info[current[1]][current[0]].g + (sys.maxsize if node.is_seen else 1)
-
-                        if node.g is None or costCur < node.g:
-                            # cost[next] = costCur
-                            if tie_break != 0:
-                                node.h = manhattan_distance(self.grid_info[goal[1]][goal[0]],
-                                                            self.grid_info[next[1]][next[0]])
-                            node.g = costCur
-                            node.f = node.g + tie_break * node.h
-                            heapq.heappush(open_set, (node.f, next))
+                        nextnode = self.grid_info[next[1]][next[0]]
+                        if nextnode.search < counter:
+                            nextnode.g = sys.maxsize
+                            nextnode.search = counter
+                        costCur = cnode.g + (sys.maxsize if nextnode.is_seen else 1)
+                        if nextnode.g is None or costCur < nextnode.g:
+                            if(next  in open_set):
+                                open_set.remove(next)
+                            nextnode.h = manhattan_distance(gnode,nextnode)
+                            nextnode.g = costCur
+                            nextnode.f = nextnode.g + nextnode.h
+                            nextnode.f = (tie_break * nextnode.f) - nextnode.g
+                            heapq.heappush(open_set, (nextnode.f, next))
                             path[next] = current
                 if not open_set:
                     print("blocked target")
@@ -209,27 +207,149 @@ class Algorithm:
                 while cur_p is not None and reached:
                     x, y = cur_p
                     pathOrder.insert(0, self.grid_info[y][x])
-                    cur_p = path[cur_p]
-
-
+                    if(cur_p in path):
+                        cur_p = path[cur_p]
+                    else:
+                        cur_p = None
                 # move
-                located = pathOrder.pop()
+                pathOrder.pop(0)
+                located = pathOrder.pop(0)
                 invalid = False
                 while len(pathOrder) > 0:
                     n = self.neighbors((located.x, located.y), True)
-                    potential_next = pathOrder.pop()
+                    potential_next = pathOrder.pop(0)
                     if potential_next.is_seen:
                         break
                         # print intermediate grid for presentation
                     else:
-                        final_path[potential_next] = located
+                        print(final_path)
+                        final_path[(potential_next.x,potential_next.y)] = (located.x,located.y)
                         located = potential_next
 
                 current = (located.x, located.y)
 
                 print(current)
-
                 if current == goal:
+                    cur_p = goal
+                    pathOrder = []
+                    while cur_p is not None and reached:
+                        x, y = cur_p
+                        pathOrder.insert(0, self.grid_info[y][x])
+                        if(cur_p in path):
+                            cur_p = final_path[cur_p]
+                        else:
+                            cur_p = None
+                    reached = True
+                else:
+                    reached = False
+
+                print("cur: ", current, "goal: ", goal, "reached: ", reached)
+
+            if reached:
+                return reached, pathOrder[::-1], self.grid_info[goal[1]][goal[0]].g, len(cost)
+            return reached, pathOrder[::-1], sys.maxsize, len(cost)
+        if (is_backward):
+            start = (self.goal.x, self.goal.y)
+            goal = (self.start.x, self.start.y)
+            open_set = []
+            closed_set = []
+            path = {}
+            cost = {}
+            counter = 0
+            delta = []
+            delta.append(counter)
+            heapq.heappush(open_set, (0, start))
+            path[start] = None
+            cost[start] = 0
+            reached = False
+            prev = None
+            final_path = {}
+            snode = self.grid_info[goal[1]][goal[0]]
+            gnode = self.grid_info[start[1]][start[0]]
+            snode.g = 0
+            snode.h = manhattan_distance(snode,gnode)
+            snode.f = snode.g + snode.h
+            current = heapq.heappop(open_set)[1]
+            while current != goal:
+                path = {}
+                counter += 1
+                cnode = self.grid_info[current[1]][current[0]]
+                cnode.search = counter
+                cnode.g = 0
+                cnode.h = manhattan_distance(cnode, gnode)
+                cnode.f = cnode.h + cnode.g
+
+                gnode.g = sys.maxsize
+                gnode.search = counter
+                open_set = []
+                closed_set = []
+                heapq.heappush(open_set, (cnode.f, current))
+                while open_set and gnode.g > open_set[0][0]:
+                    current = heapq.heappop(open_set)[1]
+                    closed_set.append(current)
+                    for next in self.neighbors(current):
+                        nextnode = self.grid_info[next[1]][next[0]]
+                        if nextnode.search < counter:
+                            nextnode.g = sys.maxsize
+                            nextnode.search = counter
+                        costCur = cnode.g + (sys.maxsize if nextnode.is_seen else 1)
+                        if nextnode.g is None or costCur < nextnode.g:
+                            if(next  in open_set):
+                                open_set.remove(next)
+                            nextnode.h = manhattan_distance(gnode,nextnode)
+                            nextnode.g = costCur
+                            nextnode.f = nextnode.g + nextnode.h
+                            nextnode.f = (tie_break * nextnode.f) - nextnode.g
+                            heapq.heappush(open_set, (nextnode.f, next))
+                            path[next] = current
+                if not open_set:
+                    print("blocked target")
+                    reached = False
+                    break
+                elif goal in path:
+                    reached = True
+
+                cur_p = goal
+                pathOrder = []
+                print("here")
+                path = {**path, **final_path}
+
+                while cur_p is not None and reached:
+                    x, y = cur_p
+                    pathOrder.insert(0, self.grid_info[y][x])
+                    if(cur_p in path):
+                        cur_p = path[cur_p]
+                    else:
+                        cur_p = None
+                # move
+                pathOrder.pop(0)
+                located = pathOrder.pop(0)
+                invalid = False
+                while len(pathOrder) > 0:
+                    n = self.neighbors((located.x, located.y), True)
+                    potential_next = pathOrder.pop(0)
+                    if potential_next.is_seen:
+                        break
+                        # print intermediate grid for presentation
+                    else:
+                        print(final_path)
+                        final_path[(potential_next.x,potential_next.y)] = (located.x,located.y)
+                        located = potential_next
+
+                current = (located.x, located.y)
+
+                print(current)
+                if current == goal:
+                    cur_p = goal
+                    pathOrder = []
+                    print("here")
+                    while cur_p is not None and reached:
+                        x, y = cur_p
+                        pathOrder.insert(0, self.grid_info[y][x])
+                        if(cur_p in path):
+                            cur_p = final_path[cur_p]
+                        else:
+                            cur_p = None
                     reached = True
                 else:
                     reached = False
@@ -241,42 +361,13 @@ class Algorithm:
             return reached, pathOrder[::-1], sys.maxsize, len(cost)
 
 
-
-
-
-        elif (is_backward):
-            start_node.g = 0
-            start_node.h = manhattan_distance(start_node, goal_node)
-            start_node.f = start_node.g + start_node.h
-            current_node = self.start
-            while current_node != goal_node:
-                self.open_set = []
-                self.counter = self.counter + 1
-                current_node.g = 0
-                goal_node.search = self.counter
-                goal_node.g = sys.maxsize
-                heapq.heappush(self.open_set, current_node)
-                self.compute_path(1.5)
-                if not self.open_set:
-                    print("blocked target")
-                    reached = False
-                    break
-                path_end = heapq.heappop(self.open_set)
-                cur = self.move(path_end, current_node, goal_node)
-                if cur is None:
-                    break
-                current_node = cur
-            if reached:
-                return current_node
-
-
 def main():
     grid_o = Grid()
     root = tk.Tk()
     alg = Algorithm(grid_o)
 
     # r, p, c, num_expanded = alg.adaptive_astar(1.25)
-    r, p, c, num_expanded = alg.repeated_astar(True, False, 1.25)
+    r, p, c, num_expanded = alg.repeated_astar(True, False,2)
     if r is not None:
         grid_o.display_path(root, p)
     else:
