@@ -201,7 +201,6 @@ class Algorithm:
 
                 cur_p = goal
                 pathOrder = []
-                print("here")
                 path = {**path, **final_path}
 
                 while cur_p is not None and reached:
@@ -212,7 +211,6 @@ class Algorithm:
                     else:
                         cur_p = None
                 # move
-                pathOrder.pop(0)
                 located = pathOrder.pop(0)
                 invalid = False
                 while len(pathOrder) > 0:
@@ -235,7 +233,7 @@ class Algorithm:
                     while cur_p is not None and reached:
                         x, y = cur_p
                         pathOrder.insert(0, self.grid_info[y][x])
-                        if(cur_p in path):
+                        if(cur_p in final_path):
                             cur_p = final_path[cur_p]
                         else:
                             cur_p = None
