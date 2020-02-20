@@ -137,8 +137,7 @@ class Algorithm:
         return reached, pathOrder[::-1], sys.maxsize, len(cost)
 
     def repeated_astar(self, is_forward, is_backward, tie_break):
-        start = (self.start.x, self.start.y)
-        goal = (self.goal.x, self.goal.y)
+
         open_set = []
         closed_set = []
         path = {}
@@ -146,14 +145,16 @@ class Algorithm:
         counter = 0
         delta = []
         delta.append(counter)
-        heapq.heappush(open_set, (0, start))
-        path[start] = None
-        cost[start] = 0
         reached = False
         prev = None
         final_path = {}
 
         if (is_forward):
+            start = (self.start.x, self.start.y)
+            goal = (self.goal.x, self.goal.y)
+            heapq.heappush(open_set, (0, start))
+            path[start] = None
+            cost[start] = 0
             snode = self.grid_info[start[1]][start[0]]
             gnode = self.grid_info[goal[1]][goal[0]]
             snode.g = 0
@@ -249,21 +250,11 @@ class Algorithm:
         if (is_backward):
             start = (self.goal.x, self.goal.y)
             goal = (self.start.x, self.start.y)
-            open_set = []
-            closed_set = []
-            path = {}
-            cost = {}
-            counter = 0
-            delta = []
-            delta.append(counter)
             heapq.heappush(open_set, (0, start))
             path[start] = None
             cost[start] = 0
-            reached = False
-            prev = None
-            final_path = {}
-            snode = self.grid_info[goal[1]][goal[0]]
-            gnode = self.grid_info[start[1]][start[0]]
+            snode = self.grid_info[start[1]][start[0]]
+            gnode = self.grid_info[goal[1]][goal[0]]
             snode.g = 0
             snode.h = manhattan_distance(snode,gnode)
             snode.f = snode.g + snode.h
@@ -309,7 +300,6 @@ class Algorithm:
 
                 cur_p = goal
                 pathOrder = []
-                print("here")
                 path = {**path, **final_path}
 
                 while cur_p is not None and reached:
@@ -320,7 +310,6 @@ class Algorithm:
                     else:
                         cur_p = None
                 # move
-                pathOrder.pop(0)
                 located = pathOrder.pop(0)
                 invalid = False
                 while len(pathOrder) > 0:
@@ -340,11 +329,10 @@ class Algorithm:
                 if current == goal:
                     cur_p = goal
                     pathOrder = []
-                    print("here")
                     while cur_p is not None and reached:
                         x, y = cur_p
                         pathOrder.insert(0, self.grid_info[y][x])
-                        if(cur_p in path):
+                        if(cur_p in final_path):
                             cur_p = final_path[cur_p]
                         else:
                             cur_p = None
@@ -358,14 +346,13 @@ class Algorithm:
                 return reached, pathOrder[::-1], self.grid_info[goal[1]][goal[0]].g, len(cost)
             return reached, pathOrder[::-1], sys.maxsize, len(cost)
 
-
 def main():
     grid_o = Grid()
     root = tk.Tk()
     alg = Algorithm(grid_o)
 
     # r, p, c, num_expanded = alg.adaptive_astar(1.25)
-    r, p, c, num_expanded = alg.repeated_astar(True, False,2)
+    r, p, c, num_expanded = alg.repeated_astar(root, grid_o,False, True,2)
     if r is not None:
         grid_o.display_path(root, p)
     else:
