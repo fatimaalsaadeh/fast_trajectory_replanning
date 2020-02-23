@@ -9,7 +9,7 @@ DARK_GRAY = '#494949'
 LIGHT_GRAY = '#979899'
 WHITE = '#fff'
 
-sys.setrecursionlimit(10**6)
+sys.setrecursionlimit(10 ** 6)
 
 
 class Grid:
@@ -99,7 +99,6 @@ class Grid:
         b = start[1] - goal[1]
         csq = a ** 2 + b ** 2
 
-        '''
         while csq < 10000:
             goal = self._gen_start_goal()
             while self.gridArr[goal[1]][goal[0]].is_blocked:
@@ -107,7 +106,7 @@ class Grid:
             a = start[0] - goal[0]
             b = start[1] - goal[1]
             csq = a ** 2 + b ** 2
-        '''
+
 
         self.start = self.gridArr[start[1]][start[0]]
         self.goal = self.gridArr[goal[1]][goal[0]]
