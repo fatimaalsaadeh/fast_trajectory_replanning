@@ -1,5 +1,6 @@
 import heapq
 import sys
+import time
 
 from grid import *
 
@@ -136,6 +137,7 @@ class Algorithm:
             return reached, pathOrder[::-1], self.grid_info[goal[1]][goal[0]].g, len(cost)
         return reached, pathOrder[::-1], sys.maxsize, len(cost)
 
+
     def repeated_astar(self, steps, grid_o, is_forward, is_backward, tie_break):
 
         open_set = []
@@ -160,8 +162,11 @@ class Algorithm:
             snode.g = 0
             snode.h = manhattan_distance(snode, gnode)
             snode.f = snode.g + snode.h
+            numexpanded = 0
             current = heapq.heappop(open_set)[1]
+            numexpanded=numexpanded+1
             while current != goal:
+                start = time.time()
                 path = {}
                 counter += 1
                 cnode = self.grid_info[current[1]][current[0]]
@@ -176,8 +181,10 @@ class Algorithm:
                 closed_set = []
                 heapq.heappush(open_set, (cnode.f, current))
                 while open_set and gnode.g > open_set[0][0]:
+                    numexpanded=numexpanded+1
                     current = heapq.heappop(open_set)[1]
                     closed_set.append(current)
+                    prevnodef = cnode.f
                     for next in self.neighbors(current):
                         nextnode = self.grid_info[next[1]][next[0]]
                         if nextnode.search < counter:
@@ -190,7 +197,9 @@ class Algorithm:
                             nextnode.h = manhattan_distance(gnode, nextnode)
                             nextnode.g = costCur
                             nextnode.f = nextnode.g + nextnode.h
-                            nextnode.f = (tie_break * nextnode.f) - nextnode.g
+                            if(nextnode.f == prevnodef):
+                                nextnode.f = tie_break * nextnode.f - nextnode.g
+                            prevnodef = nextnode.f
                             heapq.heappush(open_set, (nextnode.f, next))
                             path[next] = current
                 if not open_set:
@@ -269,9 +278,12 @@ class Algorithm:
                 else:
                     reached = False
 
-                print("cur: ", current, "goal: ", goal, "reached: ", reached)
+                print("cur: ", current, "goal: ", goal, "reached: ", reached, (self.grid_info[current[1]][current[0]]).g)
 
             if reached:
+                end = time.time()
+                print(end-start)
+                print(numexpanded)
                 r = tk.Tk()
                 grid_o.display_path(r, pathOrder[::-1])
                 r.title("final representation")
@@ -308,19 +320,22 @@ class Algorithm:
                 while open_set and gnode.g > open_set[0][0]:
                     current = heapq.heappop(open_set)[1]
                     closed_set.append(current)
+                    prevnodef= cnode.f
                     for next in self.neighbors(current):
                         nextnode = self.grid_info[next[1]][next[0]]
                         if nextnode.search < counter:
                             nextnode.g = sys.maxsize
                             nextnode.search = counter
                         costCur = cnode.g + (sys.maxsize if nextnode.is_seen else 1)
-                        if nextnode.g is None or costCur < nextnode.g:
+                        if nextnode.g is None or costCur > nextnode.g:
                             if (next in open_set):
                                 open_set.remove(next)
                             nextnode.h = manhattan_distance(gnode, nextnode)
                             nextnode.g = costCur
                             nextnode.f = nextnode.g + nextnode.h
-                            nextnode.f = (tie_break * nextnode.f) - nextnode.g
+                            if(nextnode.f == prevnodef):
+                                nextnode.f = (tie_break * nextnode.f) - nextnode.g
+                            prevnodef = nextnode.f
                             heapq.heappush(open_set, (nextnode.f, next))
                             path[next] = current
                 if not open_set:
@@ -398,7 +413,7 @@ class Algorithm:
                 else:
                     reached = False
 
-                print("cur: ", current, "goal: ", goal, "reached: ", reached)
+                print("cur: ", current, "goal: ", goal, "reached: ", reached, self.grid_info[current[1]][current[0].g])
 
             if reached:
                 r = tk.Tk()
@@ -413,12 +428,12 @@ def main():
     grid_o = Grid()
     # root = tk.Tk()
     alg = Algorithm(grid_o)
-    steps = True
+    steps = False
     f = True
     b = False
-
     # r, p, c, num_expanded = alg.adaptive_astar(1.25)
-    r, p, c, num_expanded = alg.repeated_astar(steps, grid_o, f, b, 2)
+    r, p, c, num_expanded = alg.repeated_astar(steps, grid_o, f, b, 1.25)
+
     '''
     if r is not None:
         #root.title("final path")
