@@ -137,7 +137,6 @@ class Algorithm:
             return reached, pathOrder[::-1], self.grid_info[goal[1]][goal[0]].g, len(cost)
         return reached, pathOrder[::-1], sys.maxsize, len(cost)
 
-
     def repeated_astar(self, steps, grid_o, is_forward, is_backward, tie_break):
 
         open_set = []
@@ -164,7 +163,8 @@ class Algorithm:
             snode.f = snode.g + snode.h
             numexpanded = 0
             current = heapq.heappop(open_set)[1]
-            numexpanded=numexpanded+1
+            numexpanded = numexpanded + 1
+
             while current != goal:
                 start = time.time()
                 path = {}
@@ -178,29 +178,26 @@ class Algorithm:
                 gnode.g = sys.maxsize
                 gnode.search = counter
                 open_set = []
-                closed_set = []
+                closed_set = [final_path.keys()]
                 heapq.heappush(open_set, (cnode.f, current))
                 while open_set and gnode.g > open_set[0][0]:
-                    numexpanded=numexpanded+1
+                    numexpanded = numexpanded + 1
                     current = heapq.heappop(open_set)[1]
                     closed_set.append(current)
                     prevnodef = cnode.f
                     for next in self.neighbors(current):
-                        nextnode = self.grid_info[next[1]][next[0]]
-                        if nextnode.search < counter:
-                            nextnode.g = sys.maxsize
-                            nextnode.search = counter
-                        costCur = cnode.g + (sys.maxsize if nextnode.is_seen else 1)
-                        if nextnode.g is None or costCur < nextnode.g:
-                            if (next in open_set):
-                                open_set.remove(next)
-                            nextnode.h = manhattan_distance(gnode, nextnode)
-                            nextnode.g = costCur
-                            nextnode.f = nextnode.g + nextnode.h
-                            if(nextnode.f == prevnodef):
-                                nextnode.f = tie_break * nextnode.f - nextnode.g
-                            prevnodef = nextnode.f
-                            if(next not in closed_set):
+                        if next not in closed_set:
+                            nextnode = self.grid_info[next[1]][next[0]]
+                            if nextnode.search < counter:
+                                nextnode.g = sys.maxsize
+                                nextnode.search = counter
+                            costCur = cnode.g + (sys.maxsize if nextnode.is_seen else 1)
+                            if nextnode.g is None or costCur < nextnode.g:
+                                if next in open_set:
+                                    open_set.remove(next)
+                                nextnode.h = manhattan_distance(gnode, nextnode)
+                                nextnode.g = costCur
+                                nextnode.f = nextnode.g + nextnode.h
                                 heapq.heappush(open_set, (nextnode.f, next))
                                 path[next] = current
                 if not open_set:
@@ -218,35 +215,13 @@ class Algorithm:
 
                 while cur_p is not None and reached:
                     x, y = cur_p
-                    if(any(r.x == x and r.y == y for r in pathOrder)):
-                        break
                     pathOrder.insert(0, self.grid_info[y][x])
                     if (cur_p in path):
                         cur_p = path[cur_p]
                     else:
                         cur_p = None
+
                 # move
-                '''
-                located = pathOrder.pop(0)
-                invalid = False
-                while len(pathOrder) > 0:
-                    n = self.neighbors((located.x, located.y), True)
-                    potential_next = pathOrder.pop(0)
-                    if potential_next.is_seen:
-                        if steps:
-                            r = tk.Tk()
-                            grid_o.display_path(r, final_path[::-1])
-                            r.title("intermediate representation")
-                            r.mainloop()
-
-                        break
-                        # print intermediate grid for presentation
-                    else:
-                        # print(final_path)
-                        final_path[(potential_next.x, potential_next.y)] = (located.x, located.y)
-                        located = potential_next
-                '''
-
                 located = pathOrder[0]
                 invalid = False
                 for i in range(1, len(pathOrder)):
@@ -283,11 +258,12 @@ class Algorithm:
                 else:
                     reached = False
 
-                print("cur: ", current, "goal: ", goal, "reached: ", reached, (self.grid_info[current[1]][current[0]]).g)
+                print("cur: ", current, "goal: ", goal, "reached: ", reached,
+                      (self.grid_info[current[1]][current[0]]).g)
 
             if reached:
                 end = time.time()
-                print(end-start)
+                print(end - start)
                 print(numexpanded)
                 r = tk.Tk()
                 grid_o.display_path(r, pathOrder[::-1])
@@ -320,12 +296,12 @@ class Algorithm:
                 gnode.g = sys.maxsize
                 gnode.search = counter
                 open_set = []
-                closed_set = []
+                closed_set = [final_path.keys()]
                 heapq.heappush(open_set, (cnode.f, current))
                 while open_set and gnode.g > open_set[0][0]:
                     current = heapq.heappop(open_set)[1]
                     closed_set.append(current)
-                    prevnodef= cnode.f
+                    prevnodef = cnode.f
                     for next in self.neighbors(current):
                         nextnode = self.grid_info[next[1]][next[0]]
                         if nextnode.search < counter:
@@ -357,34 +333,13 @@ class Algorithm:
 
                 while cur_p is not None and reached:
                     x, y = cur_p
-                    if(any(r.x == x and r.y == y for r in pathOrder)):
-                        break
                     pathOrder.insert(0, self.grid_info[y][x])
-                    if (cur_p in path):
+                    if cur_p in path:
                         cur_p = path[cur_p]
                     else:
                         cur_p = None
-                # move
-                '''
-                located = pathOrder.pop(0)
-                invalid = False
-                while len(pathOrder) > 0:
-                    n = self.neighbors((located.x, located.y), True)
-                    potential_next = pathOrder.pop(0)
-                    if potential_next.is_seen:
-                        if steps:
-                            r = tk.Tk()
-                            grid_o.display_path(r, pathOrder[::-1])
-                            r.title("intermediate representation")
-                            r.mainloop()
-                        break
-                        # print intermediate grid for presentation
-                    else:
-                        # print(final_path)
-                        final_path[(potential_next.x, potential_next.y)] = (located.x, located.y)
-                        located = potential_next
-                '''
 
+                # move
                 located = pathOrder[0]
                 invalid = False
                 for i in range(1, len(pathOrder)):

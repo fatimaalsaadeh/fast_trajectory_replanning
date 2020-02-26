@@ -11,6 +11,7 @@ class Node:
         self.g = None
         self.f = 0
         self.search = 0
+        self.opened = False
 
     def __lt__(self, other):
         return self.f < other.f
