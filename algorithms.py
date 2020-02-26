@@ -113,7 +113,7 @@ class Algorithm:
                     if tie_break != 0:
                         node.h = manhattan_distance(self.grid_info[goal[1]][goal[0]], self.grid_info[next[1]][next[0]])
                     node.g = cur_cost
-                    node.f = node.g + tie_break * node.h
+                    node.f = node.g + node.h
                     heapq.heappush(open_set, (node.f, next))
                     path[next] = current
             prev = current
@@ -200,8 +200,9 @@ class Algorithm:
                             if(nextnode.f == prevnodef):
                                 nextnode.f = tie_break * nextnode.f - nextnode.g
                             prevnodef = nextnode.f
-                            heapq.heappush(open_set, (nextnode.f, next))
-                            path[next] = current
+                            if(next not in closed_set):
+                                heapq.heappush(open_set, (nextnode.f, next))
+                                path[next] = current
                 if not open_set:
                     print("blocked target")
                     reached = False
