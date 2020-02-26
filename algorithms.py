@@ -335,14 +335,13 @@ class Algorithm:
                             nextnode.g = sys.maxsize
                             nextnode.search = counter
                         costCur = cnode.g + (sys.maxsize if nextnode.is_seen else 1)
-                        if nextnode.g is None or costCur > nextnode.g:
+                        if nextnode.g is None or costCur < nextnode.g:
                             if (next in open_set):
                                 open_set.remove(next)
                             nextnode.h = manhattan_distance(gnode, nextnode)
                             nextnode.g = costCur
                             nextnode.f = nextnode.g + nextnode.h
-                            if(nextnode.f == prevnodef):
-                                nextnode.f = (tie_break * nextnode.f) - nextnode.g
+                            nextnode.f = (tie_break * nextnode.f) - nextnode.g
                             prevnodef = nextnode.f
                             heapq.heappush(open_set, (nextnode.f, next))
                             path[next] = current
@@ -361,6 +360,8 @@ class Algorithm:
 
                 while cur_p is not None and reached:
                     x, y = cur_p
+                    if(any(r.x == x and r.y == y for r in pathOrder)):
+                        reached = False
                     pathOrder.insert(0, self.grid_info[y][x])
                     if (cur_p in path):
                         cur_p = path[cur_p]
@@ -414,8 +415,6 @@ class Algorithm:
                     pathOrder = []
                     while cur_p is not None and reached:
                         x, y = cur_p
-                        if(any(r.x == x and r.y == y for r in pathOrder)):
-                            reached = False
                         pathOrder.insert(0, self.grid_info[y][x])
                         if cur_p in final_path:
                             cur_p = final_path[cur_p]
@@ -425,8 +424,7 @@ class Algorithm:
                 else:
                     reached = False
 
-                print("cur: ", current, "goal: ", goal, "reached: ", reached, self.grid_info[current[1]][current[0].g])
-
+                print("cur: ", current, "goal: ", goal, "reached: ", reached)
             if reached:
                 r = tk.Tk()
                 grid_o.display_path(r, pathOrder[::-1])
