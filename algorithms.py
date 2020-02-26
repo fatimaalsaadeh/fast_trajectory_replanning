@@ -219,7 +219,7 @@ class Algorithm:
                 while cur_p is not None and reached:
                     x, y = cur_p
                     if(any(r.x == x and r.y == y for r in pathOrder)):
-                        reached = False
+                        break
                     pathOrder.insert(0, self.grid_info[y][x])
                     if (cur_p in path):
                         cur_p = path[cur_p]
@@ -276,10 +276,7 @@ class Algorithm:
                         x, y = cur_p
                         pathOrder.insert(0, self.grid_info[y][x])
                         if (cur_p in final_path):
-                            prev = cur_p
                             cur_p = final_path[cur_p]
-                            if(cur_p == prev):
-                                reached = False
                         else:
                             cur_p = None
                     reached = True
@@ -361,7 +358,7 @@ class Algorithm:
                 while cur_p is not None and reached:
                     x, y = cur_p
                     if(any(r.x == x and r.y == y for r in pathOrder)):
-                        reached = False
+                        break
                     pathOrder.insert(0, self.grid_info[y][x])
                     if (cur_p in path):
                         cur_p = path[cur_p]
