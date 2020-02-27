@@ -137,7 +137,7 @@ class Algorithm:
             return reached, pathOrder[::-1], self.grid_info[goal[1]][goal[0]].g, len(cost)
         return reached, pathOrder[::-1], sys.maxsize, len(cost)
 
-    def repeated_astar(self, steps, grid_o, is_forward, is_backward, tie_break):
+    def repeated_astar(self, steps, grid_o, is_forward, is_backward, tie_break, show):
 
         open_set = []
         closed_set = []
@@ -202,7 +202,7 @@ class Algorithm:
                                 if (nextnode.f, next) in open_set:
                                             open_set.remove((nextnode.f, next))
 
-                                nextnode.f = tie_break*nextnode.f - nextnode.h
+                                nextnode.f = tie_break*nextnode.f - nextnode.g
                                 heapq.heappush(open_set, (nextnode.f, next))
                                 path[next] = current
                 if not open_set:
@@ -270,14 +270,16 @@ class Algorithm:
 
             if reached:
                 end = time.time()
-                print(end - start)
+                total_time = end-start
                 print(numexpanded)
-                r = tk.Tk()
-                grid_o.display_path(r, pathOrder[::-1])
-                r.title("final representation")
-                r.mainloop()
-                return reached, pathOrder[::-1], self.grid_info[goal[1]][goal[0]].g, len(cost)
-            return reached, pathOrder[::-1], sys.maxsize, len(cost)
+                if show:
+                    r = tk.Tk()
+                    grid_o.display_path(r, pathOrder[::-1])
+                    r.title("final representation")
+                    r.mainloop()
+                #return reached, pathOrder[::-1], self.grid_info[goal[1]][goal[0]].g, len(cost)
+                return total_time, numexpanded
+            return 0, 0
 
         if is_backward:
             start = (self.goal.x, self.goal.y)
@@ -360,15 +362,12 @@ class Algorithm:
                             r.mainloop()
 
                         break
-                        # print intermediate grid for presentation
                     else:
-                        # print(final_path)
                         final_path[(potential_next.x, potential_next.y)] = (located.x, located.y)
                         located = potential_next
 
                 current = (located.x, located.y)
 
-                # print(current)
                 if current == goal:
                     cur_p = goal
                     pathOrder = []
@@ -400,8 +399,28 @@ def main():
     steps = False
     f = True
     b = False
+    show = False
     # r, p, c, num_expanded = alg.adaptive_astar(1.25)
-    r, p, c, num_expanded = alg.repeated_astar(steps, grid_o, f, b, 1.25)
+
+    avg_time_repeated_f = 0;
+    avg_expanded_repeated_f = 0;
+    count = 20
+
+    for i in range(count):
+        grid_o = Grid()
+        alg = Algorithm(grid_o)
+        total_time, num_expanded = alg.repeated_astar(steps, grid_o, f, b, 1.25, show)
+        if total_time == 0:
+            count = count-1
+            continue
+        avg_expanded_repeated_f += num_expanded
+        avg_time_repeated_f += total_time
+
+    avg_time_repeated_f = avg_time_repeated_f/count
+    avg_expanded_repeated_f = avg_expanded_repeated_f/count
+
+    print(avg_expanded_repeated_f)
+    print(avg_time_repeated_f)
 
     '''
     if r is not None:
