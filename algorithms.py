@@ -386,7 +386,7 @@ class Algorithm:
                 else:
                     reached = False
 
-                #print("cur: ", current, "goal: ", goal, "reached: ", reached)
+                print("cur: ", current, "goal: ", goal, "reached: ", reached)
             if reached:
                 if show:
                     r = tk.Tk()
