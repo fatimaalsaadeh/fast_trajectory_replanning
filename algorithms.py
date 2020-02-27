@@ -178,16 +178,34 @@ class Algorithm:
                 gnode.g = sys.maxsize
                 gnode.search = counter
                 open_set = []
-                closed_set = [final_path.keys()]
+                closed_set = []
                 heapq.heappush(open_set, (cnode.f, current))
                 while open_set and gnode.g > open_set[0][0]:
                     numexpanded = numexpanded + 1
                     current = heapq.heappop(open_set)[1]
+
+                    possible = [self.grid_info[current[1]][current[0]]]
+
+                    while open_set and open_set[0][0] == possible[0].f:
+                        temp = heapq.heappop(open_set)[1]
+                        possible.append(self.grid_info[temp[1]][temp[0]])
+                        print("here")
+
+                    if len(possible) > 1:
+                        for i in possible:
+                            i.f = tie_break * i.f - i.g
+                            heapq.heappush(open_set, (i.f, (i.x, i.y)))
+                            print("second")
+
+                        current = heapq.heappop(open_set)[1]
+
+
                     closed_set.append(current)
                     prevnodef = cnode.f
                     for next in self.neighbors(current):
                         if next not in closed_set:
                             nextnode = self.grid_info[next[1]][next[0]]
+
                             if nextnode.search < counter:
                                 nextnode.g = sys.maxsize
                                 nextnode.search = counter
@@ -212,9 +230,14 @@ class Algorithm:
                 cur_p = goal
                 pathOrder = []
                 path = {**path, **final_path}
+                #print("this")
+                #([key for key, values in path.items() if len(values) > 1])
 
                 while cur_p is not None and reached:
                     x, y = cur_p
+                    if any(r.x == x and r.y == y for r in pathOrder):
+                        break
+                    print(cur_p)
                     pathOrder.insert(0, self.grid_info[y][x])
                     if (cur_p in path):
                         cur_p = path[cur_p]
