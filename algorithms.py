@@ -183,15 +183,15 @@ class Algorithm:
                 while open_set and gnode.g > open_set[0][0]:
                     numexpanded = numexpanded + 1
                     current = heapq.heappop(open_set)[1]
+                    cnode = self.grid_info[current[1]][current[0]]
                     closed_set.append(current)
-                    cur_node = self.grid_info[current[1]][current[0]]
                     for next in self.neighbors(current):
                         if next not in closed_set:
                             nextnode = self.grid_info[next[1]][next[0]]
                             if nextnode.search < counter:
                                 nextnode.g = sys.maxsize
                                 nextnode.search = counter
-                            costCur = cur_node.g + (sys.maxsize if nextnode.is_seen else 1)
+                            costCur = cnode.g + (sys.maxsize if nextnode.is_seen else 1)
                             if nextnode.g is None or costCur < nextnode.g:
                                 if (nextnode.f, next) in open_set:
                                     open_set.remove((nextnode.f, next))
