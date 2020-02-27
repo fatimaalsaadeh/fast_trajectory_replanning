@@ -292,7 +292,10 @@ class Algorithm:
             snode.g = 0
             snode.h = manhattan_distance(snode, gnode)
             snode.f = snode.g + snode.h
+            numexpanded = 0
             current = heapq.heappop(open_set)[1]
+            numexpanded = numexpanded + 1
+            start = time.time()
             while current != goal:
                 path = {}
                 counter += 1
@@ -308,9 +311,10 @@ class Algorithm:
                 closed_set = [final_path.keys()]
                 heapq.heappush(open_set, (cnode.f, current))
                 while open_set and gnode.g > open_set[0][0]:
+                    numexpanded = numexpanded + 1
                     current = heapq.heappop(open_set)[1]
+                    cnode = self.grid_info[current[1]][current[0]]
                     closed_set.append(current)
-                    prevnodef = cnode.f
                     for next in self.neighbors(current):
                         nextnode = self.grid_info[next[1]][next[0]]
                         if nextnode.search < counter:
@@ -324,7 +328,6 @@ class Algorithm:
                             nextnode.g = costCur
                             nextnode.f = nextnode.g + nextnode.h
                             nextnode.f = (tie_break * nextnode.f) - nextnode.g
-                            prevnodef = nextnode.f
                             heapq.heappush(open_set, (nextnode.f, next))
                             path[next] = current
                 if not open_set:
@@ -382,14 +385,21 @@ class Algorithm:
                 else:
                     reached = False
 
-                print("cur: ", current, "goal: ", goal, "reached: ", reached)
+                #print("cur: ", current, "goal: ", goal, "reached: ", reached)
             if reached:
-                r = tk.Tk()
-                grid_o.display_path(r, pathOrder[::-1])
-                r.title("final representation")
-                r.mainloop()
-                return reached, pathOrder[::-1], self.grid_info[goal[1]][goal[0]].g, len(cost)
-            return reached, pathOrder[::-1], sys.maxsize, len(cost)
+                if show:
+                    r = tk.Tk()
+                    grid_o.display_path(r, pathOrder[::-1])
+                    r.title("final representation")
+                    r.mainloop()
+                end = time.time()
+                total_time = end-start
+                print(numexpanded)
+
+            #     return reached, pathOrder[::-1], self.grid_info[goal[1]][goal[0]].g, len(cost)
+            # return reached, pathOrder[::-1], sys.maxsize, len(cost)
+                return total_time, numexpanded
+            return 0, 0
 
 
 def main():
@@ -404,7 +414,7 @@ def main():
 
     avg_time_repeated_f = 0;
     avg_expanded_repeated_f = 0;
-    count = 20
+    count = 1
 
     for i in range(count):
         grid_o = Grid()
@@ -413,6 +423,8 @@ def main():
         if total_time == 0:
             count = count-1
             continue
+        print("expaned", num_expanded)
+        print("time", total_time)
         avg_expanded_repeated_f += num_expanded
         avg_time_repeated_f += total_time
 
