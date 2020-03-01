@@ -254,6 +254,8 @@ class Algorithm:
                     pathOrder = []
                     while cur_p is not None and reached:
                         x, y = cur_p
+                        if any(r.x == x and r.y == y for r in pathOrder):
+                            break
                         pathOrder.insert(0, self.grid_info[y][x])
                         if (cur_p in final_path):
                             cur_p = final_path[cur_p]
