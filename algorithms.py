@@ -94,6 +94,9 @@ class Algorithm:
         cost[start] = 0
         reached = False
 
+        numexpanded = 0
+        start_time = time.time()
+
         self.grid_info[start[1]][start[0]].g = 0
         self.grid_info[start[1]][start[0]].h = manhattan_distance(self.grid_info[start[1]][start[0]],
                                                                   self.grid_info[goal[1]][goal[0]])
@@ -118,6 +121,7 @@ class Algorithm:
                     path[next] = current
             prev = current
             current = heapq.heappop(open_set)[1]
+            numexpanded = numexpanded + 1
             if current == goal:
                 reached = True
                 break
@@ -133,9 +137,19 @@ class Algorithm:
             x, y = cur_p
             pathOrder.insert(0, self.grid_info[y][x])
             cur_p = path[cur_p]
+
         if reached:
-            return reached, pathOrder[::-1], self.grid_info[goal[1]][goal[0]].g, len(cost)
-        return reached, pathOrder[::-1], sys.maxsize, len(cost)
+            end_time = time.time()
+            total_time = end_time - start_time
+            #print(numexpanded)
+            if show:
+                r = tk.Tk()
+                grid_o.display_path(r, pathOrder[::-1])
+                r.title("final representation")
+                r.mainloop()
+            # return reached, pathOrder[::-1], self.grid_info[goal[1]][goal[0]].g, len(cost)
+            return total_time, numexpanded
+        return 0, 0
 
     def repeated_astar(self, steps, grid_o, is_forward, is_backward, tie_break, show):
 
@@ -164,7 +178,7 @@ class Algorithm:
             numexpanded = 0
             current = heapq.heappop(open_set)[1]
             numexpanded = numexpanded + 1
-            start = time.time()
+            start_time = time.time()
 
             while current != goal:
                 path = {}
@@ -267,8 +281,8 @@ class Algorithm:
                       (self.grid_info[current[1]][current[0]]).g)
 
             if reached:
-                end = time.time()
-                total_time = end-start
+                end_time = time.time()
+                total_time = end_time - start_time
                 print(numexpanded)
                 if show:
                     r = tk.Tk()
@@ -293,7 +307,7 @@ class Algorithm:
             numexpanded = 0
             current = heapq.heappop(open_set)[1]
             numexpanded = numexpanded + 1
-            start = time.time()
+            start_time = time.time()
             while current != goal:
                 path = {}
                 counter += 1
@@ -396,8 +410,8 @@ class Algorithm:
                     grid_o.display_path(r, pathOrder[::-1])
                     r.title("final representation")
                     r.mainloop()
-                end = time.time()
-                total_time = end-start
+                end_time = time.time()
+                total_time = end_time - start_time
                 print(numexpanded)
 
             #     return reached, pathOrder[::-1], self.grid_info[goal[1]][goal[0]].g, len(cost)
@@ -425,10 +439,11 @@ def main():
         grid_o = Grid()
         alg = Algorithm(grid_o)
         total_time, num_expanded = alg.repeated_astar(steps, grid_o, f, b, 200, show)
+        #total_time, num_expanded = alg.adaptive_astar(grid_o, 0, show)
         if total_time == 0:
             count = count-1
             continue
-        print("expaned", num_expanded)
+        print("expanded", num_expanded)
         print("time", total_time)
         avg_expanded_repeated_f += num_expanded
         avg_time_repeated_f += total_time
