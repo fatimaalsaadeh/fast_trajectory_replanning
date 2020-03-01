@@ -178,7 +178,7 @@ class Algorithm:
                 gnode.g = sys.maxsize
                 gnode.search = counter
                 open_set = []
-                closed_set = []
+                closed_set = [final_path.keys()]
                 heapq.heappush(open_set, (cnode.f, current))
                 while open_set and gnode.g > open_set[0][0]:
                     numexpanded = numexpanded + 1
@@ -200,10 +200,7 @@ class Algorithm:
                                 nextnode.h = manhattan_distance(gnode, nextnode)
                                 nextnode.g = costCur
                                 nextnode.f = nextnode.g + nextnode.h
-                                if (nextnode.f, next) in open_set:
-                                            open_set.remove((nextnode.f, next))
-
-                                nextnode.f = tie_break*nextnode.f - nextnode.g
+                                nextnode.f = (tie_break*nextnode.f) - nextnode.g
                                 heapq.heappush(open_set, (nextnode.f, next))
                                 path[next] = current
                 if not open_set:
@@ -317,20 +314,22 @@ class Algorithm:
                     cnode = self.grid_info[current[1]][current[0]]
                     closed_set.append(current)
                     for next in self.neighbors(current):
-                        nextnode = self.grid_info[next[1]][next[0]]
-                        if nextnode.search < counter:
-                            nextnode.g = sys.maxsize
-                            nextnode.search = counter
-                        costCur = cnode.g + (sys.maxsize if nextnode.is_seen else 1)
-                        if nextnode.g is None or costCur < nextnode.g:
-                            if (next in open_set):
-                                open_set.remove(next)
-                            nextnode.h = manhattan_distance(gnode, nextnode)
-                            nextnode.g = costCur
-                            nextnode.f = nextnode.g + nextnode.h
-                            nextnode.f = (tie_break * nextnode.f) - nextnode.g
-                            heapq.heappush(open_set, (nextnode.f, next))
-                            path[next] = current
+                        if next not in closed_set:
+                            nextnode = self.grid_info[next[1]][next[0]]
+                            if nextnode.search < counter:
+                                nextnode.g = sys.maxsize
+                                nextnode.search = counter
+                            costCur = cnode.g + (sys.maxsize if nextnode.is_seen else 1)
+                            if nextnode.g is None or costCur < nextnode.g:
+                                if (nextnode.f, next) in open_set:
+                                    open_set.remove((nextnode.f, next))
+                                    heapq.heapify(open_set)
+                                nextnode.h = manhattan_distance(gnode, nextnode)
+                                nextnode.g = costCur
+                                nextnode.f = nextnode.g + nextnode.h
+                                nextnode.f = (tie_break * nextnode.f) - nextnode.g
+                                heapq.heappush(open_set, (nextnode.f, next))
+                                path[next] = current
                 if not open_set:
                     print("blocked target")
                     r = tk.Tk()
@@ -346,6 +345,8 @@ class Algorithm:
 
                 while cur_p is not None and reached:
                     x, y = cur_p
+                    if any(r.x == x and r.y == y for r in pathOrder):
+                        break
                     pathOrder.insert(0, self.grid_info[y][x])
                     if cur_p in path:
                         cur_p = path[cur_p]
@@ -377,6 +378,8 @@ class Algorithm:
                     pathOrder = []
                     while cur_p is not None and reached:
                         x, y = cur_p
+                        if any(r.x == x and r.y == y for r in pathOrder):
+                            break
                         pathOrder.insert(0, self.grid_info[y][x])
                         if cur_p in final_path:
                             cur_p = final_path[cur_p]
@@ -386,7 +389,7 @@ class Algorithm:
                 else:
                     reached = False
 
-                print("cur: ", current, "goal: ", goal, "reached: ", reached)
+                print("cur: ", current, "goal: ", goal, "reached: ", reached, (self.grid_info[current[1]][current[0]]).g)
             if reached:
                 if show:
                     r = tk.Tk()
@@ -415,12 +418,13 @@ def main():
 
     avg_time_repeated_f = 0;
     avg_expanded_repeated_f = 0;
-    count = 1
-
+    count = 10
+    #alg.repeated_astar(steps, grid_o, f, b, 1.25, show)
+    #alg.repeated_astar(steps, grid_o, f, b, 12, True)
     for i in range(count):
         grid_o = Grid()
         alg = Algorithm(grid_o)
-        total_time, num_expanded = alg.repeated_astar(steps, grid_o, f, b, 1.25, show)
+        total_time, num_expanded = alg.repeated_astar(steps, grid_o, f, b, 200, show)
         if total_time == 0:
             count = count-1
             continue
