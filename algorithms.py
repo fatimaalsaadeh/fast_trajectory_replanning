@@ -1,5 +1,4 @@
 import heapq
-import sys
 import time
 
 from grid import *
@@ -51,106 +50,6 @@ class Algorithm:
         cur_node_o.search = counter
         self.grid_info[cur_node[1]][cur_node[0]] = cur_node_o
 
-    def move(self, path_end, start_node, goal_node, isBackward=False):
-        if not isBackward:
-            while path_end.parent != start_node and path_end != self.goal:
-                path_end = path_end.parent
-            start_node = path_end
-        else:
-            path_prev = goal_node.parent
-            while path_prev.parent != None and path_end != self.start:
-                path_prev = path_prev.parent
-
-        while self.start != None:
-            prev = start_node
-            cur = self.grid[self.start.x][self.start.y]
-            if cur.is_blocked:
-                cur = prev
-                self.start = self.grid[cur.x][cur.y]
-                break
-            if cur == goal_node:
-                self.start = self.grid[cur.x][cur.y]
-                cur.parent = prev
-                break
-            if cur != start_node and prev != cur and cur.parent == None:
-                cur.parent = prev
-            self.start = self.start.next
-        return cur
-
-    def adaptive_old(self, tie_break):
-        start = (self.start.x, self.start.y)
-        goal = (self.goal.x, self.goal.y)
-        open_set = []
-        closed_set = []
-        path = {}
-        cost = {}
-
-        counter = 0
-        delta = []
-        delta.append(counter)
-
-        heapq.heappush(open_set, (0, start))
-        path[start] = None
-        cost[start] = 0
-        reached = False
-
-        numexpanded = 0
-        start_time = time.time()
-
-        self.grid_info[start[1]][start[0]].g = 0
-        self.grid_info[start[1]][start[0]].h = manhattan_distance(self.grid_info[start[1]][start[0]],
-                                                                  self.grid_info[goal[1]][goal[0]])
-        self.grid_info[start[1]][start[0]].f = self.grid_info[start[1]][start[0]].g + self.grid_info[start[1]][
-            start[0]].h
-
-        current = heapq.heappop(open_set)[1]
-        while current != goal:
-            self.initialize_node(current, delta, counter)
-            self.initialize_node(goal, delta, counter)
-            self.grid_info[current[1]][current[0]].g = 0
-            for next in self.neighbors(current):
-                cur_cost = cost[current] + (sys.maxsize if self.grid_info[next[1]][next[0]].is_blocked else 1)
-                node = self.grid_info[next[1]][next[0]]
-                if next not in cost or cur_cost < cost[next]:
-                    cost[next] = cur_cost
-                    if tie_break != 0:
-                        node.h = manhattan_distance(self.grid_info[goal[1]][goal[0]], self.grid_info[next[1]][next[0]])
-                    node.g = cur_cost
-                    node.f = node.g + node.h
-                    heapq.heappush(open_set, (node.f, next))
-                    path[next] = current
-            prev = current
-            current = heapq.heappop(open_set)[1]
-            numexpanded = numexpanded + 1
-            if current == goal:
-                reached = True
-                break
-            else:
-                self.initialize_node(current, delta, counter)
-                if self.grid_info[current[1]][current[0]].g + self.grid_info[current[1]][current[0]].h < \
-                        self.grid_info[prev[1]][prev[0]].g:
-                    self.grid_info[current[1]][current[0]].h = self.grid_info[goal[1]][goal[0]].g - \
-                                                               self.grid_info[current[1]][current[0]].g
-        cur_p = goal
-        pathOrder = []
-        while cur_p is not None and reached:
-            x, y = cur_p
-            pathOrder.insert(0, self.grid_info[y][x])
-            cur_p = path[cur_p]
-
-        if reached:
-            end_time = time.time()
-            total_time = end_time - start_time
-            # print(numexpanded)
-            if show:
-                r = tk.Tk()
-                grid_o.display_path(r, pathOrder[::-1])
-                r.title("final representation")
-                r.mainloop()
-            # return reached, pathOrder[::-1], self.grid_info[goal[1]][goal[0]].g, len(cost)
-            return total_time, numexpanded
-        return 0, 0
-
     def adaptive_astar(self, steps, grid_o, tie_break, show):
 
         open_set = []
@@ -161,7 +60,6 @@ class Algorithm:
         delta = []
         delta.append(counter)
         reached = False
-        prev = None
         final_path = {}
 
         start = (self.start.x, self.start.y)
@@ -186,11 +84,11 @@ class Algorithm:
             counter += 1
             cnode = self.grid_info[current[1]][current[0]]
             cnode.search = counter
-            cnode.g = 0
             if goal_g > 0 and cnode.g:
                 cnode.h = goal_g - cnode.g
             else:
                 cnode.h = manhattan_distance(cnode, gnode)
+            cnode.g = 0
             cnode.f = cnode.h + cnode.g
 
             gnode.g = sys.maxsize
@@ -207,7 +105,7 @@ class Algorithm:
                     if next not in closed_set:
                         nextnode = self.grid_info[next[1]][next[0]]
                         if nextnode.search < counter:
-                            if goal_g > 0 and nextnode.g and nextnode.search == counter-1:
+                            if goal_g > 0 and nextnode.g and nextnode.search == counter - 1:
                                 nextnode.h = goal_g - nextnode.g
                             nextnode.g = sys.maxsize
                             nextnode.search = counter
@@ -278,6 +176,8 @@ class Algorithm:
                 pathOrder = []
                 while cur_p is not None and reached:
                     x, y = cur_p
+                    if any(r.x == x and r.y == y for r in pathOrder):
+                        break
                     pathOrder.insert(0, self.grid_info[y][x])
                     if (cur_p in final_path):
                         cur_p = final_path[cur_p]
@@ -287,7 +187,7 @@ class Algorithm:
             else:
                 reached = False
 
-            #print("cur: ", current, "goal: ", goal, "reached: ", reached, (self.grid_info[current[1]][current[0]]).g)
+            print("cur: ", current, "goal: ", goal, "reached: ", reached, (self.grid_info[current[1]][current[0]]).g)
 
         if reached:
             end_time = time.time()
@@ -586,8 +486,8 @@ def main():
     for i in range(count):
         grid_o = Grid()
         alg = Algorithm(grid_o)
-        # total_time, num_expanded = alg.repeated_astar(steps, grid_o, f, b, 200, show)
-        total_time, num_expanded = alg.adaptive_astar(steps, grid_o, 200, show)
+        total_time, num_expanded = alg.repeated_astar(steps, grid_o, f, b, 200, show)
+        #total_time, num_expanded = alg.adaptive_astar(steps, grid_o, 15, show)
         if total_time == 0:
             count = count - 1
             continue
