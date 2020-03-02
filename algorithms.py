@@ -475,14 +475,14 @@ class Algorithm:
 
 
 def main():
-    steps = False
-    f = True
-    b = False
-    show = False
+    steps = True
+    f = False
+    b = True
+    show = True
 
     avg_time_repeated_f = 0;
     avg_expanded_repeated_f = 0;
-    count = 10
+    count = 50
     for i in range(count):
         grid_o = Grid()
         alg = Algorithm(grid_o)
