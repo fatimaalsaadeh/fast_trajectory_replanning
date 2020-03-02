@@ -1,3 +1,9 @@
+##############################################################
+# Rutgers CS 520 Spring 2020
+# Assignment 1: Fast Trajectory Replanning
+# Fatima AlSaadeh (fya7)
+# Ashley Dunn (apd109)
+
 
 class Node:
     def __init__(self, is_blocked=False, x=0, y=0):

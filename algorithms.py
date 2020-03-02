@@ -1,6 +1,12 @@
+##############################################################
+# Rutgers CS 520 Spring 2020
+# Assignment 1: Fast Trajectory Replanning
+# Fatima AlSaadeh (fya7)
+# Ashley Dunn (apd109)
+
+
 import heapq
 import time
-
 from grid import *
 
 
@@ -164,13 +170,11 @@ class Algorithm:
 
                     break
                 else:
-                    # print(final_path)
                     final_path[(potential_next.x, potential_next.y)] = (located.x, located.y)
                     located = potential_next
 
             current = (located.x, located.y)
 
-            # print(current)
             if current == goal:
                 cur_p = goal
                 pathOrder = []
@@ -187,12 +191,9 @@ class Algorithm:
             else:
                 reached = False
 
-            print("cur: ", current, "goal: ", goal, "reached: ", reached, (self.grid_info[current[1]][current[0]]).g)
-
         if reached:
             end_time = time.time()
             total_time = end_time - start_time
-            print(numexpanded)
             if show:
                 r = tk.Tk()
                 grid_o.display_path(r, pathOrder[::-1])
@@ -305,15 +306,12 @@ class Algorithm:
                             r.mainloop()
 
                         break
-                        # print intermediate grid for presentation
                     else:
-                        # print(final_path)
                         final_path[(potential_next.x, potential_next.y)] = (located.x, located.y)
                         located = potential_next
 
                 current = (located.x, located.y)
 
-                # print(current)
                 if current == goal:
                     cur_p = goal
                     pathOrder = []
@@ -330,13 +328,9 @@ class Algorithm:
                 else:
                     reached = False
 
-                print("cur: ", current, "goal: ", goal, "reached: ", reached,
-                      (self.grid_info[current[1]][current[0]]).g)
-
             if reached:
                 end_time = time.time()
                 total_time = end_time - start_time
-                print(numexpanded)
                 if show:
                     r = tk.Tk()
                     grid_o.display_path(r, pathOrder[::-1])
@@ -456,8 +450,6 @@ class Algorithm:
                 else:
                     reached = False
 
-                print("cur: ", current, "goal: ", goal, "reached: ", reached,
-                      (self.grid_info[current[1]][current[0]]).g)
             if reached:
                 if show:
                     r = tk.Tk()
@@ -466,7 +458,6 @@ class Algorithm:
                     r.mainloop()
                 end_time = time.time()
                 total_time = end_time - start_time
-                print(numexpanded)
 
                 #     return reached, pathOrder[::-1], self.grid_info[goal[1]][goal[0]].g, len(cost)
                 # return reached, pathOrder[::-1], sys.maxsize, len(cost)

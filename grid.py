@@ -1,3 +1,10 @@
+##############################################################
+# Rutgers CS 520 Spring 2020
+# Assignment 1: Fast Trajectory Replanning
+# Fatima AlSaadeh (fya7)
+# Ashley Dunn (apd109)
+
+
 import numpy as np
 import random
 import tkinter as tk
